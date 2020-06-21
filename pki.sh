@@ -26,7 +26,9 @@ args()
   [ "$min" -gt "$max" -o $# -le "$max" ] || OOPS "$cmd" has no more than "$max" arguments
 }
 
-## help [command]: print help to command
+# help [command]: print help to command
+#	Without command just list all available commands.
+#	With command, it outputs complete help to command.
 cmd-help()
 {
   args 0 1 "$@"
@@ -34,7 +36,7 @@ cmd-help()
   then
 	while IFS=' ' read -ru6 pfx line
 	do
-		[ '##' = "$pfx" ] || continue
+		[ '#' = "$pfx" ] || continue
 		printf 'Usage: %q %s\n' "${0##*/}" "$line"
 	done 6<"$0"
 	return 0
@@ -42,17 +44,17 @@ cmd-help()
 
   while IFS=' ' read -ru6 pfx cmd line
   do
-	[ '##' = "$pfx" ] || continue
+	[ '#' = "$pfx" ] || continue
 	[ ".$cmd" = ".$1" ] || continue
-	printf 'Usage: %q %s\n' "${0##*/}" "$line"
-	while IFS='\t' read -ru6 pfx line
+	printf 'Usage: %q %s\n' "${0##*/}" "$cmd $line"
+	while IFS=$'\t' read -ru6 pfx line
 	do
-		[ '##' = "$pfx" ] || break
-		printf '\t%s\n' "$line"
-	done 6<"$0"
+		[ '#' = "$pfx" ] || break
+		printf '#\t%s\n' "$line"
+	done
 	return 0
-  done
-  OOPS no help for command "$1"
+  done 6<"$0"
+  OOPS no help 'for' command "$1"
 }
 
 [ 0 = $# ] && usage
