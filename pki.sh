@@ -306,12 +306,27 @@ cmd-export()
   NOTYET
 }
 
-#!# sign [file]:	sign data with the private key
+## sign [file]:	sign data with the private key
 #	If file is missing, stdin is used
 #	Signature is written to stdout
 cmd-sign()
 {
-  NOTYET
+  args 0 1 "$@"
+  load
+  ARGS=()
+  [ 0 = $# ] || ARGS=("$1")
+  STDERR : signature base64 for key "$PKI_KEY"
+  openssl dgst -sha256 -sign "$CONFDIR/$PKI_KEY.key" "${ARGS[@]}" | openssl base64
+  WARN this is preliminary.  Output will change in future versions
+  # The problem:
+  # Same file, same signature.  So replay is possible.
+  # This is bullshit.  Hence we should fix that adding some metadata:
+  # - NONCE to disable replaying signatures (see Date)
+  # - Date from the signature (encoded in SIG)
+  # - Key used to sign (not encoded in SIG, just Hint)
+  # - multiple key signing should be supported
+  # - N out of M to create a valid signature?
+  # more?
 }
 
 #!# penc [file]:	encrypt data directly with Public Key
