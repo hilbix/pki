@@ -107,14 +107,18 @@ enter()
 }
 
 # Check argument to be a simple name
-# This is basically something which can be used as a domain part as well
+# This is basically something which can look like a lowercase mail address
+# without special things like + and % or _ (see X500)
 simplename()
 {
   case "$1" in
-  (-*|*-|*--*)	return 1;;
-  (.*|*.|*..*)	return 1;;
-  (*-.*|*.-*)	return 1;;
-  (''|*[!-.a-zA-Z0-9]*)	return 1;;
+  (*[!-.@a-zA-Z0-9]*)	return 1;;	# wrong characters not ok (! inverts)
+  (*@*@*|*@)	return 1;;	# two @ or trailing @ is not ok.  @example.com is ok
+  (-*|*-|*--*)	return 1;;	# -- and leading or trailing - is not ok
+  (.*|*.|*..*)	return 1;;	# likewise dots
+  (*[-@][.@]*)	return 1;;	# wrong - . sequence
+  (*[.@][-@]*)	return 1;;	# wrong . - sequence
+  ('')		return 1;;	# empty string is not ok
   esac
   return 0
 }
