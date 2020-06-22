@@ -10,6 +10,20 @@ x() { "$@"; }
 o() { x "$@" || OOPS fail with rc=$?: "$@"; }
 v() { local ___v ___r; ___v="$("${@:2}"x)" || OOPS fail with rc=$?: "${@:2}"; ___v="${___v%x}"; ___v="${___v%$'\n'}"; printf -v "$1" %s "$___v"; return 0; }
 
+# ignore STDERR if OK
+catcherr()
+{
+  local ___err ___rc
+
+  {
+  ___err="$("$@" 2>&1 1>&3 3>&-)"
+  } 3>&1
+  ___rc=$?
+  [ 0 = "$___rc" ] && return
+  echo "$___err" >&2
+  return $___rc
+}
+
 CONFDIR="$HOME/.pki.conf.d"
 
 usage()
@@ -244,9 +258,9 @@ newkey()
 	PASSIN+=(-passin "pass:$PASSPHRASE")
 	PASSPHRASE=
   fi
-  o openssl genrsa "${PASSOUT[@]}" -out "$CONFDIR/$1.key" 2>/dev/null
+  o catcherr openssl genrsa "${PASSOUT[@]}" -out "$CONFDIR/$1.key"
   PASSOUT=
-  o openssl rsa -in "$CONFDIR/$1.key" "${PASSIN[@]}" -pubout -out "$CONFDIR/$1.pub" 2>/dev/null
+  o catcherr openssl rsa -in "$CONFDIR/$1.key" "${PASSIN[@]}" -pubout -out "$CONFDIR/$1.pub"
   PASSIN=
 }
 
