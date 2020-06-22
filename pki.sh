@@ -368,7 +368,7 @@ cmd-force()
 [ 0 = $# ] && usage
 
 declare -f "cmd-$1" >/dev/null ||
-OOPS unknown command, try help: "$1"
+OOPS unknown command $1: try help
 
 "cmd-$1" "${@:2}"
 
